@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.title }} — Online Library{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      {% if book.cover_image %}
+        <img src="{{ book.cover_image.url }}" class="card-img-top" style="height:420px; object-fit:cover;" alt="{{ book.title }}">
+      {% else %}
+        <div class="d-flex align-items-center justify-content-center" style="height:420px; background:#eef2f7;">
+          <div class="text-center text-muted">
+            <i class="bi bi-book fs-1"></i>
+            <p class="mt-2">No cover image</p>
+          </div>
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <p class="mb-1 text-muted small">Category: {% if book.category %}{{ book.category.name }}{% else %}—{% endif %}</p>
+        <p class="mb-0 text-muted small">ISBN: {{ book.isbn }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <h2 class="fw-bold mb-1">{{ book.title }}</h2>
+    <p class="text-muted mb-3">By {{ book.author|default:"Unknown" }}</p>
+
+    <div class="mb-3">
+      <strong>Publisher:</strong> {{ book.publisher|default:"-" }} &nbsp; |
+      <strong>Year:</strong> {{ book.publication_year|default:"-" }}
+    </div>
+
+    <p>{{ book.description|linebreaksbr }}</p>
+
+    <div class="mt-4 d-flex align-items-center gap-3">
+      <div>
+        <span class="badge bg-secondary">Total: {{ book.total_copies }}</span>
+        <span class="badge {% if book.available_copies > 0 %}bg-success{% else %}bg-danger{% endif %}">
+          Available: {{ book.available_copies }}
+        </span>
+      </div>
+
+      <div>
+        {% if user.is_authenticated and user.role == 'student' %}
+          {% if book.available_copies > 0 %}
+            <form method="post" action="{% url 'request_issue' book.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-book"></i> Request to Issue
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-outline-secondary btn-lg" disabled>Not available</button>
+          {% endif %}
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-outline-primary">Login to request</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

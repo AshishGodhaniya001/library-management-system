@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3>Student Dashboard</h3>
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'book_search' %}"><i class="bi bi-search"></i> Browse books</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h6 class="mb-2">Active Issued</h6>
+      <h2 class="fw-bold">{{ total_issued }}</h2>
+      <p class="mb-0 text-muted">Books currently issued</p>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h6 class="mb-2">Overdue</h6>
+      <h2 class="fw-bold text-danger">{{ overdue_count }}</h2>
+      <p class="mb-0 text-muted">Books past due date</p>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h6 class="mb-2">Total Fine</h6>
+      <h2 class="fw-bold">₹{{ total_fine }}</h2>
+      <p class="mb-0 text-muted">Accumulated fines</p>
+    </div>
+  </div>
+</div>
+
+<h5>Currently Issued</h5>
+{% if issued %}
+<table class="table table-hover">
+  <thead><tr><th>Book</th><th>Issue Date</th><th>Due Date</th><th>Fine</th></tr></thead>
+  <tbody>
+    {% for i in issued %}
+    <tr>
+      <td><a href="{% url 'book_detail' i.book.id %}">{{ i.book.title }}</a></td>
+      <td>{{ i.issue_date|date:"d M Y" }}</td>
+      <td>{{ i.due_date|date:"d M Y" }}</td>
+      <td>{% if i.fine_amount %}₹{{ i.fine_amount }}{% else %}-{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="text-muted">No issued books.</p>
+{% endif %}
+
+<hr class="my-4">
+<h5>Requests / History</h5>
+<div class="row">
+  <div class="col-md-6">
+    <h6>Requested</h6>
+    {% if requested %}
+      <ul class="list-group">
+        {% for r in requested %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div><a href="{% url 'book_detail' r.book.id %}">{{ r.book.title }}</a><br><small class="text-muted">{{ r.request_date|date:"d M Y" }}</small></div>
+            <span class="badge bg-warning text-dark">{{ r.status }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">No active requests.</p>
+    {% endif %}
+  </div>
+
+  <div class="col-md-6">
+    <h6>Returned</h6>
+    {% if returned %}
+      <ul class="list-group">
+        {% for r in returned %}
+          <li class="list-group-item">
+            <a href="{% url 'book_detail' r.book.id %}">{{ r.book.title }}</a> — <small class="text-muted">{{ r.return_date|date:"d M Y" }}</small>
+            {% if r.fine_amount %} <span class="badge bg-danger float-end">₹{{ r.fine_amount }}</span> {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">No return history.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
